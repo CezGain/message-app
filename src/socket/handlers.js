@@ -134,6 +134,56 @@ const socketHandler = (io) => {
       }
     });
 
+    socket.on('edit-message', async (data) => {
+      try {
+        const { message_id, content } = data;
+
+        if (!content || !content.trim()) {
+          socket.emit('error', { message: 'Contenu requis' });
+          return;
+        }
+
+        const message = await Message.findById(message_id).populate('sender recipient', '-password');
+
+        if (!message) {
+          socket.emit('error', { message: 'Message non trouvé' });
+          return;
+        }
+
+        if (message.sender._id.toString() !== socket.userId.toString()) {
+          socket.emit('error', { message: 'Non autorisé' });
+          return;
+        }
+
+        const messageAge = Date.now() - new Date(message.createdAt).getTime();
+        const fifteenMinutes = 15 * 60 * 1000;
+
+        if (messageAge > fifteenMinutes) {
+          socket.emit('error', { message: 'Délai de modification dépassé (15 minutes)' });
+          return;
+        }
+
+        message.content = content.trim();
+        message.edited = true;
+        await message.save();
+
+        socket.emit('message-edited', {
+          success: true,
+          message,
+        });
+
+        const recipient = await User.findById(message.recipient._id);
+        if (recipient && recipient.socketId) {
+          io.to(recipient.socketId).emit('message-updated', {
+            message,
+          });
+        }
+      } catch (error) {
+        console.error('Erreur edit-message:', error);
+        socket.emit('error', { message: "Erreur lors de l'édition" });
+      }
+    });
+
     socket.on('typing', async (data) => {
       try {
         const { recipient_id, isTyping } = data;

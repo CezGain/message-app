@@ -301,6 +301,16 @@ function connectWebSocket() {
     loadConversations();
   });
 
+  socket.on('message-edited', (data) => {
+    if (data.success) {
+      updateMessageContent(data.message._id, data.message.content, data.message.edited);
+    }
+  });
+
+  socket.on('message-updated', (data) => {
+    updateMessageContent(data.message._id, data.message.content, data.message.edited);
+  });
+
   socket.on('user-typing', (data) => {
     if (currentRecipient && data.userId === currentRecipient._id) {
       showTypingIndicator(data.username, data.isTyping);
@@ -517,6 +527,9 @@ function displayMessage(message) {
 
   const statusIcon = getStatusIcon(message.status);
 
+  const messageAge = Date.now() - new Date(message.createdAt).getTime();
+  const canEdit = isSent && messageAge < 15 * 60 * 1000;
+
   div.innerHTML = `
     <div class="message-content">
       <div class="message-text">${escapeHtml(message.content)}</div>
@@ -526,7 +539,41 @@ function displayMessage(message) {
         ${isSent ? `<span class="message-status" data-status="${message.status}">${statusIcon}</span>` : ''}
       </div>
     </div>
+    ${
+      canEdit
+        ? `
+      <button class="message-menu-btn" title="Options">⋮</button>
+      <div class="message-menu" style="display: none;">
+        <button class="menu-item edit-option">Modifier</button>
+      </div>
+    `
+        : ''
+    }
   `;
+
+  if (canEdit) {
+    const menuBtn = div.querySelector('.message-menu-btn');
+    const menu = div.querySelector('.message-menu');
+    const editOption = div.querySelector('.edit-option');
+
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = menu.style.display === 'block';
+
+      document.querySelectorAll('.message-menu').forEach((m) => (m.style.display = 'none'));
+
+      menu.style.display = isVisible ? 'none' : 'block';
+    });
+
+    editOption.addEventListener('click', () => {
+      menu.style.display = 'none';
+      editMessage(message._id, div);
+    });
+
+    document.addEventListener('click', () => {
+      menu.style.display = 'none';
+    });
+  }
 
   messagesContainer.appendChild(div);
 }
@@ -553,6 +600,88 @@ function updateMessageStatus(messageId, status) {
       statusSpan.innerHTML = getStatusIcon(status);
     }
   }
+}
+
+function updateMessageContent(messageId, content, edited) {
+  const messageDiv = document.querySelector(`.message[data-message-id="${messageId}"]`);
+  if (messageDiv) {
+    const textSpan = messageDiv.querySelector('.message-text');
+    const metaDiv = messageDiv.querySelector('.message-meta');
+
+    if (textSpan) {
+      textSpan.textContent = content;
+    }
+
+    if (edited && metaDiv) {
+      let editedBadge = metaDiv.querySelector('.edited-badge');
+      if (!editedBadge) {
+        const timeSpan = metaDiv.querySelector('.message-time');
+        editedBadge = document.createElement('span');
+        editedBadge.className = 'edited-badge';
+        editedBadge.textContent = 'modifié';
+        timeSpan.after(editedBadge);
+      }
+    }
+  }
+}
+
+function editMessage(messageId, messageDiv) {
+  const textSpan = messageDiv.querySelector('.message-text');
+  const currentContent = textSpan.textContent;
+
+  const input = document.createElement('textarea');
+  input.className = 'edit-message-input';
+  input.value = currentContent;
+  input.rows = 2;
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'save-edit-btn';
+  saveBtn.textContent = '✓';
+  saveBtn.title = 'Sauvegarder';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'cancel-edit-btn';
+  cancelBtn.textContent = '✕';
+  cancelBtn.title = 'Annuler';
+
+  const editControls = document.createElement('div');
+  editControls.className = 'edit-controls';
+  editControls.appendChild(input);
+  editControls.appendChild(saveBtn);
+  editControls.appendChild(cancelBtn);
+
+  const messageContent = messageDiv.querySelector('.message-content');
+  messageContent.style.display = 'none';
+  messageDiv.appendChild(editControls);
+
+  input.focus();
+  input.select();
+
+  saveBtn.addEventListener('click', () => {
+    const newContent = input.value.trim();
+    if (newContent && newContent !== currentContent) {
+      socket.emit('edit-message', {
+        message_id: messageId,
+        content: newContent,
+      });
+    }
+    editControls.remove();
+    messageContent.style.display = 'block';
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    editControls.remove();
+    messageContent.style.display = 'block';
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      saveBtn.click();
+    } else if (e.key === 'Escape') {
+      cancelBtn.click();
+    }
+  });
 }
 
 // Envoi de messages

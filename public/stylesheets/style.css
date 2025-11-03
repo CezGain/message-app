@@ -461,6 +461,123 @@ body {
   gap: 8px;
   max-width: 70%;
   animation: slideIn 0.2s ease;
+  position: relative;
+}
+
+.message-menu-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(90deg);
+}
+
+.message:hover .message-menu-btn {
+  opacity: 1;
+}
+
+.message-menu-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.message-menu {
+  position: absolute;
+  top: 35px;
+  right: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 120px;
+  overflow: hidden;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+  transition: background 0.2s;
+}
+
+.menu-item:hover {
+  background: var(--background);
+}
+
+.edit-controls {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.edit-message-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 40px;
+  max-height: 120px;
+}
+
+.edit-message-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.save-edit-btn,
+.cancel-edit-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+
+.save-edit-btn {
+  background: var(--success);
+  color: white;
+}
+
+.save-edit-btn:hover {
+  background: #278a3d;
+}
+
+.cancel-edit-btn {
+  background: var(--error);
+  color: white;
+}
+
+.cancel-edit-btn:hover {
+  background: #c41e3a;
 }
 
 @keyframes slideIn {
