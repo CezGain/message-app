@@ -29,6 +29,12 @@ const themeToggleBtn = document.getElementById('theme-toggle');
 const headerMenuBtn = document.getElementById('header-menu-btn');
 const headerMenu = document.getElementById('header-menu');
 const themeIcon = document.getElementById('theme-icon');
+const editProfileBtn = document.getElementById('edit-profile-btn');
+const editProfileModal = document.getElementById('edit-profile-modal');
+const closeProfileModal = document.getElementById('close-profile-modal');
+const cancelProfileEdit = document.getElementById('cancel-profile-edit');
+const editProfileForm = document.getElementById('edit-profile-form');
+const profileError = document.getElementById('profile-error');
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', async () => {
@@ -130,6 +136,31 @@ function setupEventListeners() {
   headerMenu.addEventListener('click', (e) => {
     e.stopPropagation();
   });
+
+  // Modal profil
+  editProfileBtn.addEventListener('click', () => {
+    document.getElementById('edit-username').value = currentUser.username;
+    document.getElementById('edit-email').value = currentUser.email;
+    document.getElementById('edit-avatar').value = currentUser.avatar || '';
+    profileError.textContent = '';
+    editProfileModal.classList.add('active');
+  });
+
+  closeProfileModal.addEventListener('click', () => {
+    editProfileModal.classList.remove('active');
+  });
+
+  cancelProfileEdit.addEventListener('click', () => {
+    editProfileModal.classList.remove('active');
+  });
+
+  editProfileModal.addEventListener('click', (e) => {
+    if (e.target === editProfileModal) {
+      editProfileModal.classList.remove('active');
+    }
+  });
+
+  editProfileForm.addEventListener('submit', handleProfileUpdate);
 }
 
 // Authentification
@@ -227,6 +258,43 @@ function toggleTheme() {
   }
 
   headerMenu.classList.remove('active');
+}
+
+async function handleProfileUpdate(e) {
+  e.preventDefault();
+  profileError.textContent = '';
+
+  const username = document.getElementById('edit-username').value;
+  const email = document.getElementById('edit-email').value;
+  const avatar = document.getElementById('edit-avatar').value;
+
+  try {
+    const response = await fetch(`${API_URL}/api/users/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ username, email, avatar: avatar || undefined }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      currentUser = data.user;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      document.getElementById('current-user-name').textContent = currentUser.username;
+      const avatar =
+        currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.username}&background=0084ff&color=fff`;
+      document.getElementById('current-user-avatar').src = avatar;
+      editProfileModal.classList.remove('active');
+    } else {
+      profileError.textContent = data.message || 'Erreur lors de la mise à jour';
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    profileError.textContent = 'Erreur de connexion au serveur';
+  }
 }
 
 // Charger les données de l'utilisateur actuel

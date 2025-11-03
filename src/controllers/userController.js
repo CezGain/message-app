@@ -60,7 +60,7 @@ exports.getUsers = async (req, res) => {
  */
 exports.updateProfile = async (req, res) => {
   try {
-    const { username, avatar } = req.body;
+    const { username, email, avatar } = req.body;
     const user = await User.findById(req.userId);
 
     if (!user) {
@@ -69,7 +69,6 @@ exports.updateProfile = async (req, res) => {
       });
     }
 
-    // Vérifier si le nouveau username est déjà pris
     if (username && username !== user.username) {
       const existingUser = await User.findOne({ username });
       if (existingUser) {
@@ -78,6 +77,16 @@ exports.updateProfile = async (req, res) => {
         });
       }
       user.username = username;
+    }
+
+    if (email && email !== user.email) {
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        return res.status(409).json({
+          error: 'Email déjà utilisé',
+        });
+      }
+      user.email = email;
     }
 
     if (avatar !== undefined) {

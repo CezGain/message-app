@@ -74,6 +74,7 @@
               <div id="current-user-name"></div>
               <div id="current-user-status" class="status online">En ligne</div>
             </div>
+            <button id="edit-profile-btn" class="edit-profile-btn" title="Modifier mon profil">✏️</button>
           </div>
 
           <div class="search-box">
@@ -129,6 +130,35 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal pour éditer le profil -->
+    <div id="edit-profile-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Modifier mon profil</h3>
+          <button id="close-profile-modal" class="close-modal-btn">&times;</button>
+        </div>
+        <form id="edit-profile-form">
+          <div class="form-group">
+            <label for="edit-username">Pseudo</label>
+            <input type="text" id="edit-username" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-email">Email</label>
+            <input type="email" id="edit-email" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-avatar">Avatar URL</label>
+            <input type="url" id="edit-avatar" placeholder="https://..." />
+          </div>
+          <div class="form-actions">
+            <button type="button" id="cancel-profile-edit" class="btn-secondary">Annuler</button>
+            <button type="submit" class="btn-primary">Enregistrer</button>
+          </div>
+        </form>
+        <div id="profile-error" class="error-message"></div>
       </div>
     </div>
 
