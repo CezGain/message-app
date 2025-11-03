@@ -260,7 +260,17 @@ function connectWebSocket() {
     if (data.success) {
       displayMessage(data.message);
       scrollToBottom();
-      loadConversations();
+      
+      // Recharger les conversations et retirer l'utilisateur de "Tous les utilisateurs"
+      loadConversations().then(() => {
+        // Retirer l'utilisateur de la liste "Tous les utilisateurs" s'il y est
+        if (currentRecipient) {
+          const userInAllList = allUsersList.querySelector(`[data-user-id="${currentRecipient._id}"]`);
+          if (userInAllList) {
+            userInAllList.remove();
+          }
+        }
+      });
     }
   });
 
@@ -296,11 +306,16 @@ async function loadConversations() {
     if (response.ok) {
       console.log('Conversations reçues:', data.conversations);
       displayConversations(data.conversations);
+      
+      // Retourner les conversations pour permettre le chaînage
+      return data.conversations;
     } else {
       console.error('Erreur API conversations:', data);
+      return [];
     }
   } catch (error) {
     console.error('Erreur chargement conversations:', error);
+    return [];
   }
 }
 
