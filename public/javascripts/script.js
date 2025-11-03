@@ -22,6 +22,9 @@ const logoutBtn = document.getElementById('logout-btn');
 const showAllUsersBtn = document.getElementById('show-all-users');
 const hideAllUsersBtn = document.getElementById('hide-all-users');
 const allUsersSection = document.getElementById('all-users-section');
+const backToSidebarBtn = document.getElementById('back-to-sidebar');
+const sidebar = document.querySelector('.sidebar');
+const chatBox = document.getElementById('chat-box');
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', async () => {
@@ -91,6 +94,17 @@ function setupEventListeners() {
     allUsersSection.style.display = 'none';
     showAllUsersBtn.style.display = 'block';
   });
+
+  // Mobile: retour à la sidebar
+  if (backToSidebarBtn) {
+    backToSidebarBtn.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('hide');
+        chatBox.classList.remove('active');
+        currentRecipient = null;
+      }
+    });
+  }
 }
 
 // Authentification
@@ -437,6 +451,12 @@ async function selectConversation(user) {
   // Afficher le chat
   document.getElementById('no-chat-selected').style.display = 'none';
   document.getElementById('chat-box').style.display = 'flex';
+
+  // Mobile: masquer sidebar et afficher chat
+  if (window.innerWidth <= 768) {
+    sidebar.classList.add('hide');
+    chatBox.classList.add('active');
+  }
 
   // Afficher les infos du destinataire
   const avatar = user.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=0084ff&color=fff`;
