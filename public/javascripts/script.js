@@ -1,7 +1,7 @@
 // Configuration
 const API_URL = window.location.origin;
 let token = localStorage.getItem('token');
-let currentUser = null;
+let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 let socket = null;
 let currentRecipient = null;
 let typingTimeout = null;
@@ -20,17 +20,30 @@ const searchUsersInput = document.getElementById('search-users');
 const logoutBtn = document.getElementById('logout-btn');
 
 // Initialisation
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (token) {
-    initApp();
+    // Si on a un currentUser en cache, l'utiliser
+    if (currentUser) {
+      initApp();
+    } else {
+      // Sinon, charger depuis le serveur
+      await loadCurrentUser();
+      if (currentUser) {
+        initApp();
+      } else {
+        // Token invalide, déconnexion
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        token = null;
+        showAuthPage();
+      }
+    }
   } else {
     showAuthPage();
   }
 
   setupEventListeners();
-});
-
-// Event Listeners
+}); // Event Listeners
 function setupEventListeners() {
   // Auth forms
   document.getElementById('show-register').addEventListener('click', (e) => {
@@ -83,6 +96,7 @@ async function handleLogin(e) {
       token = data.token;
       localStorage.setItem('token', token);
       currentUser = data.user;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
       initApp();
     } else {
       showError(data.error);
@@ -112,6 +126,7 @@ async function handleRegister(e) {
       token = data.token;
       localStorage.setItem('token', token);
       currentUser = data.user;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
       initApp();
     } else {
       showError(data.error);
@@ -138,7 +153,29 @@ async function handleLogout() {
   token = null;
   currentUser = null;
   localStorage.removeItem('token');
+  localStorage.removeItem('currentUser');
   showAuthPage();
+}
+
+// Charger les données de l'utilisateur actuel
+async function loadCurrentUser() {
+  try {
+    const response = await fetch(`${API_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      currentUser = data.user;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error('Erreur chargement utilisateur:', error);
+    return false;
+  }
 }
 
 // Initialisation de l'application

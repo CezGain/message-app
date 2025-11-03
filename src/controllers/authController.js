@@ -146,3 +146,28 @@ exports.logout = async (req, res) => {
     });
   }
 };
+
+/**
+ * Controller pour obtenir l'utilisateur connecté
+ * @route GET /api/auth/me
+ */
+exports.me = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Utilisateur non trouvé',
+      });
+    }
+
+    res.status(200).json({
+      user: user.toPublicJSON(),
+    });
+  } catch (error) {
+    console.error('Erreur me:', error);
+    res.status(500).json({
+      error: 'Erreur serveur',
+    });
+  }
+};

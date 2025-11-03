@@ -24,4 +24,11 @@ router.post('/login', authController.login);
  */
 router.post('/logout', authMiddleware, authController.logout);
 
+/**
+ * @route GET /api/auth/me
+ * @description Obtenir l'utilisateur connecté
+ * @access Protected
+ */
+router.get('/me', authMiddleware, authController.me);
+
 module.exports = router;
