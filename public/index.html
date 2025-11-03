@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Message App - Chat 1-to-1</title>
+    <link rel="stylesheet" href="stylesheets/style.css" />
+  </head>
+  <body>
+    <!-- Page de connexion/inscription -->
+    <div id="auth-page" class="page active">
+      <div class="auth-container">
+        <h1>Message App</h1>
+
+        <!-- Formulaire de connexion -->
+        <div id="login-form" class="auth-form active">
+          <h2>Connexion</h2>
+          <form id="loginForm">
+            <input type="email" id="login-email" placeholder="Email" required />
+            <input type="password" id="login-password" placeholder="Mot de passe" required />
+            <button type="submit">Se connecter</button>
+          </form>
+          <p>
+            Pas de compte ?
+            <a href="#" id="show-register">S'inscrire</a>
+          </p>
+        </div>
+
+        <!-- Formulaire d'inscription -->
+        <div id="register-form" class="auth-form">
+          <h2>Inscription</h2>
+          <form id="registerForm">
+            <input type="email" id="register-email" placeholder="Email" required />
+            <input type="text" id="register-username" placeholder="Nom d'utilisateur" required minlength="3" />
+            <input type="password" id="register-password" placeholder="Mot de passe" required minlength="6" />
+            <input type="url" id="register-avatar" placeholder="URL Avatar (optionnel)" />
+            <button type="submit">S'inscrire</button>
+          </form>
+          <p>
+            Déjà un compte ?
+            <a href="#" id="show-login">Se connecter</a>
+          </p>
+        </div>
+
+        <div id="auth-error" class="error"></div>
+      </div>
+    </div>
+
+    <!-- Page de chat -->
+    <div id="chat-page" class="page">
+      <div class="chat-container">
+        <!-- Sidebar avec liste des utilisateurs -->
+        <div class="sidebar">
+          <div class="sidebar-header">
+            <h2>Conversations</h2>
+            <button id="logout-btn" title="Déconnexion">🚪</button>
+          </div>
+
+          <div class="current-user">
+            <img id="current-user-avatar" src="" alt="Avatar" />
+            <div>
+              <div id="current-user-name"></div>
+              <div id="current-user-status" class="status online">En ligne</div>
+            </div>
+          </div>
+
+          <div class="search-box">
+            <input type="text" id="search-users" placeholder="Rechercher un utilisateur..." />
+          </div>
+
+          <div id="conversations-list" class="conversations-list"></div>
+        </div>
+
+        <!-- Zone de chat -->
+        <div class="chat-area">
+          <div id="no-chat-selected" class="no-chat">
+            <h3>Sélectionnez une conversation</h3>
+            <p>Choisissez un utilisateur pour commencer à discuter</p>
+          </div>
+
+          <div id="chat-box" class="chat-box" style="display: none">
+            <!-- Header du chat -->
+            <div class="chat-header">
+              <img id="recipient-avatar" src="" alt="Avatar" />
+              <div>
+                <div id="recipient-name"></div>
+                <div id="recipient-status" class="status"></div>
+              </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="messages-container" class="messages-container"></div>
+
+            <!-- Indicateur de frappe -->
+            <div id="typing-indicator" class="typing-indicator" style="display: none">
+              <span id="typing-user"></span>
+              est en train d'écrire...
+            </div>
+
+            <!-- Zone de saisie -->
+            <div class="message-input-container">
+              <textarea id="message-input" placeholder="Tapez votre message..." rows="1"></textarea>
+              <button id="send-btn">Envoyer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="javascripts/script.js"></script>
+  </body>
+</html>
