@@ -13,11 +13,15 @@ const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 const authError = document.getElementById('auth-error');
 const conversationsList = document.getElementById('conversations-list');
+const allUsersList = document.getElementById('all-users-list');
 const messagesContainer = document.getElementById('messages-container');
 const messageInput = document.getElementById('message-input');
 const sendBtn = document.getElementById('send-btn');
 const searchUsersInput = document.getElementById('search-users');
 const logoutBtn = document.getElementById('logout-btn');
+const showAllUsersBtn = document.getElementById('show-all-users');
+const hideAllUsersBtn = document.getElementById('hide-all-users');
+const allUsersSection = document.getElementById('all-users-section');
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', async () => {
@@ -75,6 +79,18 @@ function setupEventListeners() {
 
   messageInput.addEventListener('input', handleTyping);
   searchUsersInput.addEventListener('input', handleSearch);
+
+  // Afficher/Masquer tous les utilisateurs
+  showAllUsersBtn.addEventListener('click', () => {
+    allUsersSection.style.display = 'block';
+    showAllUsersBtn.style.display = 'none';
+    loadUsers();
+  });
+
+  hideAllUsersBtn.addEventListener('click', () => {
+    allUsersSection.style.display = 'none';
+    showAllUsersBtn.style.display = 'block';
+  });
 }
 
 // Authentification
@@ -183,8 +199,7 @@ function initApp() {
   showChatPage();
   displayCurrentUser();
   connectWebSocket();
-  loadConversations();
-  loadUsers();
+  loadConversations(); // Charger uniquement les conversations actives par défaut
 }
 
 function showAuthPage() {
@@ -279,7 +294,10 @@ async function loadConversations() {
     const data = await response.json();
 
     if (response.ok) {
+      console.log('Conversations reçues:', data.conversations);
       displayConversations(data.conversations);
+    } else {
+      console.error('Erreur API conversations:', data);
     }
   } catch (error) {
     console.error('Erreur chargement conversations:', error);
@@ -295,14 +313,21 @@ async function loadUsers() {
     const data = await response.json();
 
     if (response.ok) {
-      const usersWithoutConversations = data.users.filter((u) => u._id !== currentUser._id);
+      // Récupérer les IDs des conversations existantes
+      const existingConvIds = Array.from(document.querySelectorAll('#conversations-list [data-user-id]')).map(
+        (el) => el.dataset.userId
+      );
 
-      // Ajouter à la liste si pas de conversation existante
+      // Filtrer pour afficher uniquement les utilisateurs sans conversation
+      const usersWithoutConversations = data.users.filter(
+        (u) => u._id !== currentUser._id && !existingConvIds.includes(u._id)
+      );
+
+      // Vider et afficher dans la section "Tous les utilisateurs"
+      allUsersList.innerHTML = '';
       usersWithoutConversations.forEach((user) => {
-        const existingConv = document.querySelector(`[data-user-id="${user._id}"]`);
-        if (!existingConv) {
-          displayUserInList(user);
-        }
+        const item = createConversationItem(user, null, 0);
+        allUsersList.appendChild(item);
       });
     }
   } catch (error) {
@@ -313,10 +338,24 @@ async function loadUsers() {
 function displayConversations(conversations) {
   conversationsList.innerHTML = '';
 
-  conversations.forEach((conv) => {
+  console.log('Affichage de', conversations.length, 'conversations');
+
+  if (conversations.length === 0) {
+    conversationsList.innerHTML =
+      '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">Aucune conversation<br><small>Cliquez sur "Afficher tous les utilisateurs" pour démarrer une discussion</small></div>';
+    return;
+  }
+
+  conversations.forEach((conv, index) => {
+    console.log(`Conversation ${index}:`, conv);
     const user = conv._id;
     const lastMessage = conv.lastMessage;
     const unreadCount = conv.unreadCount;
+
+    if (!user) {
+      console.error('Utilisateur manquant dans conversation:', conv);
+      return;
+    }
 
     const item = createConversationItem(user, lastMessage, unreadCount);
     conversationsList.appendChild(item);
@@ -325,7 +364,7 @@ function displayConversations(conversations) {
 
 function displayUserInList(user) {
   const item = createConversationItem(user, null, 0);
-  conversationsList.appendChild(item);
+  allUsersList.appendChild(item);
 }
 
 function createConversationItem(user, lastMessage, unreadCount) {
@@ -333,7 +372,14 @@ function createConversationItem(user, lastMessage, unreadCount) {
   div.className = 'conversation-item';
   div.dataset.userId = user._id;
 
-  const avatar = user.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=0084ff&color=fff`;
+  // Vérifier que user a les propriétés nécessaires
+  if (!user.username) {
+    console.error('Utilisateur sans username:', user);
+    return div;
+  }
+
+  const avatar =
+    user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=0084ff&color=fff`;
 
   const preview = lastMessage
     ? lastMessage.deleted
@@ -473,25 +519,71 @@ async function handleSearch(e) {
   const query = e.target.value.trim();
 
   if (query.length < 2) {
+    // Restaurer l'affichage normal
+    allUsersSection.style.display = 'none';
+    showAllUsersBtn.style.display = 'block';
+    document.getElementById('conversations-section').style.display = 'block';
     loadConversations();
-    loadUsers();
+    allUsersList.innerHTML = '';
     return;
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/users/search?q=${encodeURIComponent(query)}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    // Charger toutes les données nécessaires en parallèle
+    const [searchResponse, conversationsResponse] = await Promise.all([
+      fetch(`${API_URL}/api/users/search?q=${encodeURIComponent(query)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      fetch(`${API_URL}/api/messages/conversations`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ]);
 
-    const data = await response.json();
+    const searchData = await searchResponse.json();
+    const conversationsData = await conversationsResponse.json();
 
-    if (response.ok) {
+    if (searchResponse.ok) {
+      // Filtrer les conversations qui correspondent à la recherche
+      const matchingConversations = conversationsData.conversations.filter((conv) =>
+        conv._id.username.toLowerCase().includes(query.toLowerCase())
+      );
+
+      // Récupérer les IDs des utilisateurs déjà dans les conversations
+      const conversationUserIds = conversationsData.conversations.map((conv) => conv._id._id);
+
+      // Filtrer les autres utilisateurs (ceux pas dans les conversations)
+      const otherUsers = searchData.users.filter(
+        (user) => user._id !== currentUser._id && !conversationUserIds.includes(user._id)
+      );
+
+      // Afficher les sections
+      document.getElementById('conversations-section').style.display = 'block';
+      allUsersSection.style.display = 'block';
+      showAllUsersBtn.style.display = 'none';
+
+      // Afficher les conversations filtrées
       conversationsList.innerHTML = '';
-      data.users.forEach((user) => {
-        if (user._id !== currentUser._id) {
-          displayUserInList(user);
-        }
-      });
+      if (matchingConversations.length === 0) {
+        conversationsList.innerHTML =
+          '<div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 14px;">Aucune conversation correspondante</div>';
+      } else {
+        matchingConversations.forEach((conv) => {
+          const item = createConversationItem(conv._id, conv.lastMessage, conv.unreadCount);
+          conversationsList.appendChild(item);
+        });
+      }
+
+      // Afficher les autres utilisateurs filtrés
+      allUsersList.innerHTML = '';
+      if (otherUsers.length === 0) {
+        allUsersList.innerHTML =
+          '<div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 14px;">Aucun utilisateur correspondant</div>';
+      } else {
+        otherUsers.forEach((user) => {
+          const item = createConversationItem(user, null, 0);
+          allUsersList.appendChild(item);
+        });
+      }
     }
   } catch (error) {
     console.error('Erreur recherche:', error);

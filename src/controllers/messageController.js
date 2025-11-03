@@ -122,7 +122,7 @@ exports.getConversations = async (req, res) => {
   try {
     const userId = req.userId;
 
-    // Agrégation pour obtenir les conversations
+    // Agrégation pour obtenir les conversations avec lookup intégré
     const conversations = await Message.aggregate([
       {
         $match: {
@@ -152,20 +152,39 @@ exports.getConversations = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'userDetails',
+        },
+      },
+      {
+        $unwind: '$userDetails',
+      },
+      {
+        $project: {
+          _id: {
+            _id: '$userDetails._id',
+            username: '$userDetails.username',
+            email: '$userDetails.email',
+            avatar: '$userDetails.avatar',
+            status: '$userDetails.status',
+            lastConnection: '$userDetails.lastConnection',
+          },
+          lastMessage: 1,
+          unreadCount: 1,
+        },
+      },
+      {
         $sort: { 'lastMessage.createdAt': -1 },
       },
     ]);
 
-    // Peupler les informations utilisateur
-    await Message.populate(conversations, {
-      path: '_id',
-      select: '-password',
-    });
-
-    await Message.populate(conversations, {
-      path: 'lastMessage.sender lastMessage.recipient',
-      select: '-password',
-    });
+    console.log('Conversations trouvées:', conversations.length);
+    if (conversations.length > 0) {
+      console.log('Exemple conversation:', JSON.stringify(conversations[0], null, 2));
+    }
 
     res.status(200).json({
       conversations,

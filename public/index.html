@@ -68,7 +68,20 @@
             <input type="text" id="search-users" placeholder="Rechercher un utilisateur..." />
           </div>
 
-          <div id="conversations-list" class="conversations-list"></div>
+          <div id="conversations-section">
+            <div class="section-header">Conversations</div>
+            <div id="conversations-list" class="conversations-list"></div>
+          </div>
+
+          <div id="all-users-section" style="display: none">
+            <div class="section-header">
+              <span>Tous les utilisateurs</span>
+              <button id="hide-all-users" class="toggle-btn">Masquer</button>
+            </div>
+            <div id="all-users-list" class="conversations-list"></div>
+          </div>
+
+          <button id="show-all-users" class="show-all-btn">Afficher tous les utilisateurs</button>
         </div>
 
         <!-- Zone de chat -->
