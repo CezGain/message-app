@@ -107,6 +107,52 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        error: 'Tous les champs sont requis',
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        error: 'Le nouveau mot de passe doit contenir au moins 6 caractères',
+      });
+    }
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Utilisateur non trouvé',
+      });
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        error: 'Mot de passe actuel incorrect',
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      message: 'Mot de passe modifié avec succès',
+    });
+  } catch (error) {
+    console.error('Erreur changePassword:', error);
+    res.status(500).json({
+      error: 'Erreur serveur',
+    });
+  }
+};
+
 /**
  * Controller pour rechercher des utilisateurs
  * @route GET /api/users/search

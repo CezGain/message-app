@@ -60,6 +60,10 @@
                   <span id="theme-icon">🌙</span>
                   <span>Changer le thème</span>
                 </button>
+                <button id="change-password-btn" class="header-menu-item">
+                  <span>🔒</span>
+                  <span>Changer le mot de passe</span>
+                </button>
                 <button id="logout-btn" class="header-menu-item">
                   <span>🚪</span>
                   <span>Déconnexion</span>
@@ -159,6 +163,35 @@
           </div>
         </form>
         <div id="profile-error" class="error-message"></div>
+      </div>
+    </div>
+
+    <!-- Modal pour changer le mot de passe -->
+    <div id="change-password-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Changer le mot de passe</h3>
+          <button id="close-password-modal" class="close-modal-btn">&times;</button>
+        </div>
+        <form id="change-password-form">
+          <div class="form-group">
+            <label for="current-password">Mot de passe actuel</label>
+            <input type="password" id="current-password" required />
+          </div>
+          <div class="form-group">
+            <label for="new-password">Nouveau mot de passe</label>
+            <input type="password" id="new-password" required minlength="6" />
+          </div>
+          <div class="form-group">
+            <label for="confirm-password">Confirmer le nouveau mot de passe</label>
+            <input type="password" id="confirm-password" required minlength="6" />
+          </div>
+          <div class="form-actions">
+            <button type="button" id="cancel-password-change" class="btn-secondary">Annuler</button>
+            <button type="submit" class="btn-primary">Enregistrer</button>
+          </div>
+        </form>
+        <div id="password-error" class="error-message"></div>
       </div>
     </div>
 

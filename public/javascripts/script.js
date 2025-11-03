@@ -35,6 +35,12 @@ const closeProfileModal = document.getElementById('close-profile-modal');
 const cancelProfileEdit = document.getElementById('cancel-profile-edit');
 const editProfileForm = document.getElementById('edit-profile-form');
 const profileError = document.getElementById('profile-error');
+const changePasswordBtn = document.getElementById('change-password-btn');
+const changePasswordModal = document.getElementById('change-password-modal');
+const closePasswordModal = document.getElementById('close-password-modal');
+const cancelPasswordChange = document.getElementById('cancel-password-change');
+const changePasswordForm = document.getElementById('change-password-form');
+const passwordError = document.getElementById('password-error');
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', async () => {
@@ -161,6 +167,30 @@ function setupEventListeners() {
   });
 
   editProfileForm.addEventListener('submit', handleProfileUpdate);
+
+  // Modal mot de passe
+  changePasswordBtn.addEventListener('click', () => {
+    changePasswordForm.reset();
+    passwordError.textContent = '';
+    headerMenu.classList.remove('active');
+    changePasswordModal.classList.add('active');
+  });
+
+  closePasswordModal.addEventListener('click', () => {
+    changePasswordModal.classList.remove('active');
+  });
+
+  cancelPasswordChange.addEventListener('click', () => {
+    changePasswordModal.classList.remove('active');
+  });
+
+  changePasswordModal.addEventListener('click', (e) => {
+    if (e.target === changePasswordModal) {
+      changePasswordModal.classList.remove('active');
+    }
+  });
+
+  changePasswordForm.addEventListener('submit', handlePasswordChange);
 }
 
 // Authentification
@@ -294,6 +324,49 @@ async function handleProfileUpdate(e) {
   } catch (error) {
     console.error('Erreur:', error);
     profileError.textContent = 'Erreur de connexion au serveur';
+  }
+}
+
+async function handlePasswordChange(e) {
+  e.preventDefault();
+  passwordError.textContent = '';
+
+  const currentPassword = document.getElementById('current-password').value;
+  const newPassword = document.getElementById('new-password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+
+  if (newPassword !== confirmPassword) {
+    passwordError.textContent = 'Les mots de passe ne correspondent pas';
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    passwordError.textContent = 'Le mot de passe doit contenir au moins 6 caractères';
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/users/change-password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      changePasswordModal.classList.remove('active');
+      changePasswordForm.reset();
+      alert('Mot de passe modifié avec succès');
+    } else {
+      passwordError.textContent = data.error || 'Erreur lors du changement de mot de passe';
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    passwordError.textContent = 'Erreur de connexion au serveur';
   }
 }
 
