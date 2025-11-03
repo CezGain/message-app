@@ -156,18 +156,26 @@ body {
   font-size: 24px;
 }
 
-#logout-btn {
-  background: none;
+.logout-btn {
+  background: var(--error);
+  color: white;
   border: none;
-  font-size: 24px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 5px;
-  border-radius: 50%;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
-#logout-btn:hover {
-  background: var(--background);
+.logout-btn:hover {
+  background: #c41e3a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(228, 41, 75, 0.3);
+}
+
+#logout-btn:active {
+  transform: translateY(0);
 }
 
 .current-user {
