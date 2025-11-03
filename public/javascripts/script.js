@@ -25,9 +25,19 @@ const allUsersSection = document.getElementById('all-users-section');
 const backToSidebarBtn = document.getElementById('back-to-sidebar');
 const sidebar = document.querySelector('.sidebar');
 const chatBox = document.getElementById('chat-box');
+const themeToggleBtn = document.getElementById('theme-toggle');
+const headerMenuBtn = document.getElementById('header-menu-btn');
+const headerMenu = document.getElementById('header-menu');
+const themeIcon = document.getElementById('theme-icon');
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', async () => {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeIcon.textContent = '☀️';
+  }
+
   if (token) {
     // Si on a un currentUser en cache, l'utiliser
     if (currentUser) {
@@ -70,6 +80,7 @@ function setupEventListeners() {
   loginForm.addEventListener('submit', handleLogin);
   registerForm.addEventListener('submit', handleRegister);
   logoutBtn.addEventListener('click', handleLogout);
+  themeToggleBtn.addEventListener('click', toggleTheme);
 
   // Chat
   sendBtn.addEventListener('click', sendMessage);
@@ -105,6 +116,20 @@ function setupEventListeners() {
       }
     });
   }
+
+  // Menu header
+  headerMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    headerMenu.classList.toggle('active');
+  });
+
+  document.addEventListener('click', () => {
+    headerMenu.classList.remove('active');
+  });
+
+  headerMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
 }
 
 // Authentification
@@ -185,6 +210,23 @@ async function handleLogout() {
   localStorage.removeItem('token');
   localStorage.removeItem('currentUser');
   showAuthPage();
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? null : 'dark';
+
+  if (newTheme) {
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    themeIcon.textContent = '☀️';
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.removeItem('theme');
+    themeIcon.textContent = '🌙';
+  }
+
+  headerMenu.classList.remove('active');
 }
 
 // Charger les données de l'utilisateur actuel

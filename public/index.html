@@ -53,7 +53,19 @@
         <div class="sidebar">
           <div class="sidebar-header">
             <h2>Conversations</h2>
-            <button id="logout-btn" class="logout-btn">Déconnexion</button>
+            <div class="header-actions">
+              <button id="header-menu-btn" class="header-menu-btn" title="Menu">⋮</button>
+              <div id="header-menu" class="header-menu">
+                <button id="theme-toggle" class="header-menu-item">
+                  <span id="theme-icon">🌙</span>
+                  <span>Changer le thème</span>
+                </button>
+                <button id="logout-btn" class="header-menu-item">
+                  <span>🚪</span>
+                  <span>Déconnexion</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="current-user">
