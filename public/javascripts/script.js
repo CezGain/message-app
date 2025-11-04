@@ -1,4 +1,3 @@
-// Configuration
 const API_URL = window.location.origin;
 let token = localStorage.getItem('token');
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
@@ -6,7 +5,6 @@ let socket = null;
 let currentRecipient = null;
 let typingTimeout = null;
 
-// Éléments DOM
 const authPage = document.getElementById('auth-page');
 const chatPage = document.getElementById('chat-page');
 const loginForm = document.getElementById('loginForm');
@@ -42,7 +40,6 @@ const cancelPasswordChange = document.getElementById('cancel-password-change');
 const changePasswordForm = document.getElementById('change-password-form');
 const passwordError = document.getElementById('password-error');
 
-// Initialisation
 document.addEventListener('DOMContentLoaded', async () => {
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'dark') {
@@ -51,16 +48,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (token) {
-    // Si on a un currentUser en cache, l'utiliser
     if (currentUser) {
       initApp();
     } else {
-      // Sinon, charger depuis le serveur
       await loadCurrentUser();
       if (currentUser) {
         initApp();
       } else {
-        // Token invalide, déconnexion
         localStorage.removeItem('token');
         localStorage.removeItem('currentUser');
         token = null;
@@ -72,9 +66,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   setupEventListeners();
-}); // Event Listeners
+});
 function setupEventListeners() {
-  // Auth forms
   document.getElementById('show-register').addEventListener('click', (e) => {
     e.preventDefault();
     document.getElementById('login-form').classList.remove('active');
@@ -94,7 +87,6 @@ function setupEventListeners() {
   logoutBtn.addEventListener('click', handleLogout);
   themeToggleBtn.addEventListener('click', toggleTheme);
 
-  // Chat
   sendBtn.addEventListener('click', sendMessage);
   messageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -106,7 +98,6 @@ function setupEventListeners() {
   messageInput.addEventListener('input', handleTyping);
   searchUsersInput.addEventListener('input', handleSearch);
 
-  // Afficher/Masquer tous les utilisateurs
   showAllUsersBtn.addEventListener('click', () => {
     allUsersSection.style.display = 'block';
     showAllUsersBtn.style.display = 'none';
@@ -118,7 +109,6 @@ function setupEventListeners() {
     showAllUsersBtn.style.display = 'block';
   });
 
-  // Mobile: retour à la sidebar
   if (backToSidebarBtn) {
     backToSidebarBtn.addEventListener('click', () => {
       if (window.innerWidth <= 768) {
@@ -129,7 +119,6 @@ function setupEventListeners() {
     });
   }
 
-  // Menu header
   headerMenuBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     headerMenu.classList.toggle('active');
@@ -143,7 +132,6 @@ function setupEventListeners() {
     e.stopPropagation();
   });
 
-  // Modal profil
   editProfileBtn.addEventListener('click', () => {
     document.getElementById('edit-username').value = currentUser.username;
     document.getElementById('edit-email').value = currentUser.email;
@@ -168,7 +156,6 @@ function setupEventListeners() {
 
   editProfileForm.addEventListener('submit', handleProfileUpdate);
 
-  // Modal mot de passe
   changePasswordBtn.addEventListener('click', () => {
     changePasswordForm.reset();
     passwordError.textContent = '';
@@ -193,7 +180,6 @@ function setupEventListeners() {
   changePasswordForm.addEventListener('submit', handlePasswordChange);
 }
 
-// Authentification
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value;
@@ -370,7 +356,6 @@ async function handlePasswordChange(e) {
   }
 }
 
-// Charger les données de l'utilisateur actuel
 async function loadCurrentUser() {
   try {
     const response = await fetch(`${API_URL}/api/auth/me`, {
@@ -391,12 +376,11 @@ async function loadCurrentUser() {
   }
 }
 
-// Initialisation de l'application
 function initApp() {
   showChatPage();
   displayCurrentUser();
   connectWebSocket();
-  loadConversations(); // Charger uniquement les conversations actives par défaut
+  loadConversations();
 }
 
 function showAuthPage() {
@@ -422,7 +406,6 @@ function displayCurrentUser() {
   document.getElementById('current-user-avatar').src = avatar;
 }
 
-// WebSocket
 function connectWebSocket() {
   socket = io(API_URL, {
     auth: { token },
@@ -503,7 +486,6 @@ function connectWebSocket() {
   });
 }
 
-// Conversations
 async function loadConversations() {
   try {
     const response = await fetch(`${API_URL}/api/messages/conversations`, {
@@ -535,17 +517,14 @@ async function loadUsers() {
     const data = await response.json();
 
     if (response.ok) {
-      // Récupérer les IDs des conversations existantes
       const existingConvIds = Array.from(document.querySelectorAll('#conversations-list [data-user-id]')).map(
         (el) => el.dataset.userId
       );
 
-      // Filtrer pour afficher uniquement les utilisateurs sans conversation
       const usersWithoutConversations = data.users.filter(
         (u) => u._id !== currentUser._id && !existingConvIds.includes(u._id)
       );
 
-      // Vider et afficher dans la section "Tous les utilisateurs"
       allUsersList.innerHTML = '';
       usersWithoutConversations.forEach((user) => {
         const item = createConversationItem(user, null, 0);
@@ -591,7 +570,6 @@ function createConversationItem(user, lastMessage, unreadCount) {
   div.className = 'conversation-item';
   div.dataset.userId = user._id;
 
-  // Vérifier que user a les propriétés nécessaires
   if (!user.username) {
     console.error('Utilisateur sans username:', user);
     return div;
@@ -623,7 +601,6 @@ function createConversationItem(user, lastMessage, unreadCount) {
 async function selectConversation(user) {
   currentRecipient = user;
 
-  // Mettre à jour l'UI
   document.querySelectorAll('.conversation-item').forEach((item) => {
     item.classList.remove('active');
   });
@@ -631,24 +608,20 @@ async function selectConversation(user) {
   if (selectedConvItem) {
     selectedConvItem.classList.add('active');
 
-    // Retirer immédiatement le badge de notification
     const badge = selectedConvItem.querySelector('.unread-badge');
     if (badge) {
       badge.remove();
     }
   }
 
-  // Afficher le chat
   document.getElementById('no-chat-selected').style.display = 'none';
   document.getElementById('chat-box').style.display = 'flex';
 
-  // Mobile: masquer sidebar et afficher chat
   if (window.innerWidth <= 768) {
     sidebar.classList.add('hide');
     chatBox.classList.add('active');
   }
 
-  // Afficher les infos du destinataire
   const avatar = user.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=0084ff&color=fff`;
   document.getElementById('recipient-avatar').src = avatar;
   document.getElementById('recipient-name').textContent = user.username;
@@ -657,7 +630,6 @@ async function selectConversation(user) {
   statusElem.textContent = user.status === 'online' ? 'En ligne' : 'Hors ligne';
   statusElem.className = `status ${user.status}`;
 
-  // Charger les messages
   await loadMessages(user._id);
   scrollToBottom();
 }
@@ -933,7 +905,6 @@ function showMessageInfo(message) {
   });
 }
 
-// Envoi de messages
 function sendMessage() {
   const content = messageInput.value.trim();
 
@@ -948,7 +919,6 @@ function sendMessage() {
   messageInput.style.height = 'auto';
 }
 
-// Typing indicator
 function handleTyping() {
   if (!currentRecipient) return;
 
@@ -976,12 +946,10 @@ function showTypingIndicator(username, isTyping) {
   }
 }
 
-// Recherche
 async function handleSearch(e) {
   const query = e.target.value.trim();
 
   if (query.length < 2) {
-    // Restaurer l'affichage normal
     allUsersSection.style.display = 'none';
     showAllUsersBtn.style.display = 'block';
     document.getElementById('conversations-section').style.display = 'block';
@@ -991,7 +959,6 @@ async function handleSearch(e) {
   }
 
   try {
-    // Charger toutes les données nécessaires en parallèle
     const [searchResponse, conversationsResponse] = await Promise.all([
       fetch(`${API_URL}/api/users/search?q=${encodeURIComponent(query)}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -1005,25 +972,20 @@ async function handleSearch(e) {
     const conversationsData = await conversationsResponse.json();
 
     if (searchResponse.ok) {
-      // Filtrer les conversations qui correspondent à la recherche
       const matchingConversations = conversationsData.conversations.filter((conv) =>
         conv._id.username.toLowerCase().includes(query.toLowerCase())
       );
 
-      // Récupérer les IDs des utilisateurs déjà dans les conversations
       const conversationUserIds = conversationsData.conversations.map((conv) => conv._id._id);
 
-      // Filtrer les autres utilisateurs (ceux pas dans les conversations)
       const otherUsers = searchData.users.filter(
         (user) => user._id !== currentUser._id && !conversationUserIds.includes(user._id)
       );
 
-      // Afficher les sections
       document.getElementById('conversations-section').style.display = 'block';
       allUsersSection.style.display = 'block';
       showAllUsersBtn.style.display = 'none';
 
-      // Afficher les conversations filtrées
       conversationsList.innerHTML = '';
       if (matchingConversations.length === 0) {
         conversationsList.innerHTML =
@@ -1035,7 +997,6 @@ async function handleSearch(e) {
         });
       }
 
-      // Afficher les autres utilisateurs filtrés
       allUsersList.innerHTML = '';
       if (otherUsers.length === 0) {
         allUsersList.innerHTML =
@@ -1052,7 +1013,6 @@ async function handleSearch(e) {
   }
 }
 
-// Statut utilisateur
 function updateUserStatus(userId, status) {
   const convItem = document.querySelector(`[data-user-id="${userId}"]`);
 
@@ -1063,7 +1023,6 @@ function updateUserStatus(userId, status) {
   }
 }
 
-// Utilitaires
 function scrollToBottom() {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }

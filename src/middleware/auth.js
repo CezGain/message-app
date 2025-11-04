@@ -7,7 +7,6 @@ const User = require('../models/User');
  */
 const authMiddleware = async (req, res, next) => {
   try {
-    // Récupérer le token du header Authorization
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -16,12 +15,10 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    const token = authHeader.substring(7); // Retirer "Bearer "
+    const token = authHeader.substring(7);
 
-    // Vérifier et décoder le token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Récupérer l'utilisateur depuis la base de données
     const user = await User.findById(decoded.userId).select('-password');
 
     if (!user) {
@@ -30,7 +27,6 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Attacher l'utilisateur à la requête
     req.user = user;
     req.userId = user._id;
 
