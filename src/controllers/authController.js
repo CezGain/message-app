@@ -1,7 +1,7 @@
-const User = require('../models/User');
-const { generateToken } = require('../middleware/auth');
+import { generateToken } from '../middleware/auth.js';
+import User from '../models/User.js';
 
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const { email, username, password, avatar } = req.body;
 
@@ -55,7 +55,7 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -98,7 +98,7 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.logout = async (req, res) => {
+export const logout = async (req, res) => {
   try {
     const user = await User.findById(req.userId);
 
@@ -124,7 +124,7 @@ exports.logout = async (req, res) => {
   }
 };
 
-exports.me = async (req, res) => {
+export const me = async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password');
 

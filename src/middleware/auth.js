@@ -1,6 +1,6 @@
-const { ENV, PORT, DB_URI, JWT_SECRET } = require('../config');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config.ts';
+import User from '../models/User.js';
 
 /**
  * Middleware d'authentification JWT
@@ -58,4 +58,4 @@ const generateToken = (userId) => {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
 };
 
-module.exports = { authMiddleware, generateToken };
+export { authMiddleware, generateToken };

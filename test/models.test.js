@@ -1,24 +1,8 @@
-const { ENV, PORT, DB_URI, JWT_SECRET } = require('../src/config');
-const { expect } = require('chai');
-const mongoose = require('mongoose');
-const User = require('../src/models/User');
-const Message = require('../src/models/Message');
+import { expect } from 'chai';
+import Message from '../src/models/Message.js';
+import User from '../src/models/User.js';
 
 describe('Tests Unitaires - Modèles', () => {
-  before(async () => {
-    await mongoose.connect(DB_URI);
-  });
-
-  after(async () => {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-  });
-
-  afterEach(async () => {
-    await User.deleteMany({});
-    await Message.deleteMany({});
-  });
-
   describe('Modèle User', () => {
     it('devrait créer un utilisateur valide', async () => {
       const userData = {

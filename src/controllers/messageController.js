@@ -1,8 +1,8 @@
-const Message = require('../models/Message');
-const User = require('../models/User');
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import Message from '../models/Message.js';
+import User from '../models/User.js';
 
-exports.createMessage = async (req, res) => {
+export const createMessage = async (req, res) => {
   try {
     const { recipient_id, content } = req.body;
 
@@ -48,7 +48,7 @@ exports.createMessage = async (req, res) => {
   }
 };
 
-exports.getMessagesWith = async (req, res) => {
+export const getMessagesWith = async (req, res) => {
   try {
     const { user_id } = req.params;
     const page = parseInt(req.query.page) || 1;
@@ -108,7 +108,7 @@ exports.getMessagesWith = async (req, res) => {
   }
 };
 
-exports.getConversations = async (req, res) => {
+export const getConversations = async (req, res) => {
   try {
     const userId = req.userId;
 
@@ -185,7 +185,7 @@ exports.getConversations = async (req, res) => {
  * Controller pour éditer un message
  * @route PUT /api/messages/:id
  */
-exports.updateMessage = async (req, res) => {
+export const updateMessage = async (req, res) => {
   try {
     const { id } = req.params;
     const { content } = req.body;
@@ -228,7 +228,7 @@ exports.updateMessage = async (req, res) => {
   }
 };
 
-exports.deleteMessage = async (req, res) => {
+export const deleteMessage = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -261,7 +261,7 @@ exports.deleteMessage = async (req, res) => {
   }
 };
 
-exports.markAsRead = async (req, res) => {
+export const markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
 

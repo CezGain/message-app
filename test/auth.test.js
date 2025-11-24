@@ -1,36 +1,25 @@
-const { ENV, PORT, DB_URI, JWT_SECRET } = require('../src/config');
-const { expect } = require('chai');
-const request = require('supertest');
-const mongoose = require('mongoose');
-const { app } = require('../src/app');
-const User = require('../src/models/User');
+import { expect } from 'chai';
+import request from 'supertest';
+import { app } from '../src/app.js';
+import User from '../src/models/User.js';
+import { createLoggedClient } from './helpers/client.ts';
 
 describe("Tests d'Intégration - Authentification", () => {
-  before(async () => {
-    await mongoose.connect(DB_URI);
-  });
-
-  after(async () => {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-  });
-
-  afterEach(async () => {
-    await User.deleteMany({});
-  });
+  const USER_1_EMAIL = 'user+1@example.com';
+  const USER_2_EMAIL = 'user+2@example.com';
 
   describe('POST /api/auth/register', () => {
     it('devrait créer un nouvel utilisateur', async () => {
       const res = await request(app).post('/api/auth/register').send({
-        email: 'test@example.com',
-        username: 'testuser',
+        email: 'newuser@example.com',
+        username: 'newuser',
         password: 'password123',
       });
 
       expect(res.status).to.equal(201);
       expect(res.body).to.have.property('token');
       expect(res.body).to.have.property('user');
-      expect(res.body.user.email).to.equal('test@example.com');
+      expect(res.body.user.email).to.equal('newuser@example.com');
       expect(res.body.user).to.not.have.property('password');
     });
 
@@ -56,14 +45,8 @@ describe("Tests d'Intégration - Authentification", () => {
     });
 
     it('devrait rejeter un email déjà utilisé', async () => {
-      await request(app).post('/api/auth/register').send({
-        email: 'test@example.com',
-        username: 'testuser1',
-        password: 'password123',
-      });
-
       const res = await request(app).post('/api/auth/register').send({
-        email: 'test@example.com',
+        email: USER_1_EMAIL,
         username: 'testuser2',
         password: 'password123',
       });
@@ -74,18 +57,10 @@ describe("Tests d'Intégration - Authentification", () => {
   });
 
   describe('POST /api/auth/login', () => {
-    beforeEach(async () => {
-      await request(app).post('/api/auth/register').send({
-        email: 'test@example.com',
-        username: 'testuser',
-        password: 'password123',
-      });
-    });
-
     it('devrait connecter un utilisateur valide', async () => {
       const res = await request(app).post('/api/auth/login').send({
-        email: 'test@example.com',
-        password: 'password123',
+        email: USER_1_EMAIL,
+        password: 'password1',
       });
 
       expect(res.status).to.equal(200);
@@ -96,7 +71,7 @@ describe("Tests d'Intégration - Authentification", () => {
 
     it('devrait rejeter un mot de passe invalide', async () => {
       const res = await request(app).post('/api/auth/login').send({
-        email: 'test@example.com',
+        email: USER_1_EMAIL,
         password: 'wrongpassword',
       });
 
@@ -125,24 +100,14 @@ describe("Tests d'Intégration - Authentification", () => {
   });
 
   describe('POST /api/auth/logout', () => {
-    let token;
-
-    beforeEach(async () => {
-      const res = await request(app).post('/api/auth/register').send({
-        email: 'test@example.com',
-        username: 'testuser',
-        password: 'password123',
-      });
-      token = res.body.token;
-    });
-
     it('devrait déconnecter un utilisateur authentifié', async () => {
-      const res = await request(app).post('/api/auth/logout').set('Authorization', `Bearer ${token}`);
+      const client = await createLoggedClient(USER_1_EMAIL);
+      const res = await client.post('/api/auth/logout');
 
       expect(res.status).to.equal(200);
       expect(res.body.message).to.include('Déconnexion réussie');
 
-      const user = await User.findOne({ email: 'test@example.com' });
+      const user = await User.findOne({ email: USER_1_EMAIL });
       expect(user.status).to.equal('offline');
     });
 

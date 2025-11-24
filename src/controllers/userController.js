@@ -1,10 +1,10 @@
-const User = require('../models/User');
+import User from '../models/User.js';
 
 /**
  * Controller pour obtenir un utilisateur par ID
  * @route GET /api/users/:id
  */
-exports.getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
 
@@ -27,7 +27,7 @@ exports.getUserById = async (req, res) => {
  * Controller pour lister tous les utilisateurs
  * @route GET /api/users
  */
-exports.getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -58,7 +58,7 @@ exports.getUsers = async (req, res) => {
  * Controller pour mettre à jour le profil
  * @route PUT /api/users/profile
  */
-exports.updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
   try {
     const { username, email, avatar } = req.body;
     const user = await User.findById(req.userId);
@@ -107,7 +107,7 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-exports.changePassword = async (req, res) => {
+export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
@@ -157,7 +157,7 @@ exports.changePassword = async (req, res) => {
  * Controller pour rechercher des utilisateurs
  * @route GET /api/users/search
  */
-exports.searchUsers = async (req, res) => {
+export const searchUsers = async (req, res) => {
   try {
     const { q } = req.query;
 

@@ -1,12 +1,16 @@
-const { ENV, PORT, DB_URI, JWT_SECRET } = require('./config');
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const path = require('path');
+import cors from 'cors';
+import express from 'express';
+import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { DB_URI } from './config.ts';
 
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const messageRoutes = require('./routes/messages');
+import authRoutes from './routes/auth.js';
+import messageRoutes from './routes/messages.js';
+import userRoutes from './routes/users.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -53,4 +57,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = { app, connectDB };
+export { app, connectDB };

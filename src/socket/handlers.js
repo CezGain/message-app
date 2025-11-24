@@ -1,7 +1,7 @@
-const { ENV, PORT, DB_URI, JWT_SECRET } = require('../config');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const Message = require('../models/Message');
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config.ts';
+import Message from '../models/Message.js';
+import User from '../models/User.js';
 
 const socketHandler = (io) => {
   io.use(async (socket, next) => {
@@ -237,4 +237,4 @@ const socketHandler = (io) => {
   });
 };
 
-module.exports = socketHandler;
+export default socketHandler;

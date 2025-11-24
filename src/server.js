@@ -1,8 +1,8 @@
-const { ENV, PORT, DB_URI, JWT_SECRET } = require('./config');
-const http = require('http');
-const { Server } = require('socket.io');
-const { app, connectDB } = require('./app');
-const socketHandler = require('./socket/handlers');
+import http from 'http';
+import { Server } from 'socket.io';
+import { app, connectDB } from './app.js';
+import { PORT } from './config.ts';
+import socketHandler from './socket/handlers.js';
 
 const server = http.createServer(app);
 
@@ -39,8 +39,6 @@ process.on('SIGINT', async () => {
   });
 });
 
-if (require.main === module) {
-  startServer();
-}
+startServer();
 
-module.exports = { server, io };
+export { io, server };

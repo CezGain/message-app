@@ -1,26 +1,18 @@
-const { ENV, PORT, DB_URI, JWT_SECRET } = require('../src/config');
-const { expect } = require('chai');
-const io = require('socket.io-client');
-const http = require('http');
-const { Server } = require('socket.io');
-const mongoose = require('mongoose');
-const { app } = require('../src/app');
-const socketHandler = require('../src/socket/handlers');
-const request = require('supertest');
-const User = require('../src/models/User');
-const Message = require('../src/models/Message');
+import { expect } from 'chai';
+import http from 'http';
+import { Server } from 'socket.io';
+import io from 'socket.io-client';
+import request from 'supertest';
+import { app } from '../src/app.js';
+import Message from '../src/models/Message.js';
+import User from '../src/models/User.js';
+import socketHandler from '../src/socket/handlers.js';
 
 describe('Tests WebSocket', () => {
   let httpServer, ioServer, clientSocket1, clientSocket2, token1, token2, user1, user2;
   const PORT = 4000;
 
   before(async function () {
-    this.timeout(10000);
-
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(DB_URI);
-    }
-
     httpServer = http.createServer(app);
     ioServer = new Server(httpServer, {
       cors: {
@@ -47,11 +39,6 @@ describe('Tests WebSocket', () => {
 
     if (httpServer) {
       await new Promise((resolve) => httpServer.close(resolve));
-    }
-
-    if (mongoose.connection.readyState !== 0) {
-      await User.deleteMany({});
-      await Message.deleteMany({});
     }
   });
 

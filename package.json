@@ -1,11 +1,12 @@
 {
   "name": "fake-whatsapp-api",
   "version": "0.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "start": "node src/server.js",
     "dev": "ENV_PATH=.env.local nodemon src/server.js",
-    "test": "ENV_PATH=.env.test nyc mocha test/**/*.test.js --timeout 10000 --exit",
+    "test": "ENV_PATH=.env.test nyc mocha",
     "test:watch": "ENV_PATH=.env.test nodemon --exec 'npm test'"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "@types/supertest": "^6.0.3",
     "chai": "^6.2.0",
     "mocha": "^11.7.4",
     "nodemon": "^3.1.10",
