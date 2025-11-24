@@ -1,3 +1,4 @@
+const { ENV, PORT, DB_URI, JWT_SECRET } = require('../src/config');
 const { expect } = require('chai');
 const mongoose = require('mongoose');
 const User = require('../src/models/User');
@@ -5,8 +6,7 @@ const Message = require('../src/models/Message');
 
 describe('Tests Unitaires - Modèles', () => {
   before(async () => {
-    const dbUri = process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/message-app-test';
-    await mongoose.connect(dbUri);
+    await mongoose.connect(DB_URI);
   });
 
   after(async () => {

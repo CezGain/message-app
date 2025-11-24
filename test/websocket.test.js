@@ -1,3 +1,4 @@
+const { ENV, PORT, DB_URI, JWT_SECRET } = require('../src/config');
 const { expect } = require('chai');
 const io = require('socket.io-client');
 const http = require('http');
@@ -17,8 +18,7 @@ describe('Tests WebSocket', () => {
     this.timeout(10000);
 
     if (mongoose.connection.readyState === 0) {
-      const dbUri = process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/message-app-test';
-      await mongoose.connect(dbUri);
+      await mongoose.connect(DB_URI);
     }
 
     httpServer = http.createServer(app);

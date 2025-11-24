@@ -1,3 +1,4 @@
+const { ENV, PORT, DB_URI, JWT_SECRET } = require('../config');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Message = require('../models/Message');
@@ -11,7 +12,7 @@ const socketHandler = (io) => {
         return next(new Error('Token manquant'));
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const user = await User.findById(decoded.userId);
 
       if (!user) {

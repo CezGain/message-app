@@ -1,4 +1,4 @@
-require('dotenv').config();
+const { ENV, PORT, DB_URI, JWT_SECRET } = require('./config');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -45,12 +45,7 @@ app.use((err, req, res, next) => {
 
 const connectDB = async () => {
   try {
-    const dbUri =
-      process.env.NODE_ENV === 'test'
-        ? process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/message-app-test'
-        : process.env.MONGODB_URI;
-
-    await mongoose.connect(dbUri);
+    await mongoose.connect(DB_URI);
     console.log('✓ MongoDB connecté');
   } catch (error) {
     console.error('✗ Erreur connexion MongoDB:', error);

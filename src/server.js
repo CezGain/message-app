@@ -1,10 +1,8 @@
-require('dotenv').config();
+const { ENV, PORT, DB_URI, JWT_SECRET } = require('./config');
 const http = require('http');
 const { Server } = require('socket.io');
 const { app, connectDB } = require('./app');
 const socketHandler = require('./socket/handlers');
-
-const PORT = process.env.PORT || 3000;
 
 const server = http.createServer(app);
 

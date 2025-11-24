@@ -1,12 +1,12 @@
 {
-  "name": "message-app",
+  "name": "fake-whatsapp-api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "test": "NODE_ENV=test nyc mocha test/**/*.test.js --timeout 10000 --exit",
-    "test:watch": "NODE_ENV=test nodemon --exec 'npm test'"
+    "dev": "ENV_PATH=.env.local nodemon src/server.js",
+    "test": "ENV_PATH=.env.test nyc mocha test/**/*.test.js --timeout 10000 --exit",
+    "test:watch": "ENV_PATH=.env.test nodemon --exec 'npm test'"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

@@ -1,3 +1,4 @@
+const { ENV, PORT, DB_URI, JWT_SECRET } = require('../config');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
@@ -17,7 +18,7 @@ const authMiddleware = async (req, res, next) => {
 
     const token = authHeader.substring(7);
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
 
     const user = await User.findById(decoded.userId).select('-password');
 
@@ -54,7 +55,7 @@ const authMiddleware = async (req, res, next) => {
  * @returns {string} Token JWT
  */
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
 };
 
 module.exports = { authMiddleware, generateToken };
